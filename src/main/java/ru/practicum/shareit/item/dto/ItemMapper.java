@@ -14,5 +14,16 @@ public class ItemMapper {
         dto.setRequest(item.getRequest());
         return dto;
     }
-}
 
+    public static Item toItem(ItemDto dto) {
+        if (dto == null) return null;
+        Item item = new Item();
+        item.setId(dto.getId());
+        item.setName(dto.getName());
+        item.setDescription(dto.getDescription());
+        item.setAvailable(dto.getAvailable());
+        item.setOwner(dto.getOwner());
+        item.setRequest(dto.getRequest());
+        return item;
+    }
+}
