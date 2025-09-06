@@ -22,7 +22,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto create(ItemDto itemDto, Long ownerId) {
         User owner = userRepository.findById(ownerId);
-        if (owner == null) throw new java.util.NoSuchElementException("User not found");
+        if (owner == null) {
+            throw new java.util.NoSuchElementException("User not found");
+        }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(owner);
         Item saved = itemRepository.save(item);
@@ -32,13 +34,21 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto update(Long itemId, ItemDto itemDto, Long ownerId) {
         Item existing = itemRepository.findById(itemId);
-        if (existing == null) throw new java.util.NoSuchElementException("Item not found");
+        if (existing == null) {
+            throw new java.util.NoSuchElementException("Item not found");
+        }
         if (existing.getOwner() == null || !existing.getOwner().getId().equals(ownerId)) {
             throw new java.util.NoSuchElementException("Item not found");
         }
-        if (itemDto.getName() != null) existing.setName(itemDto.getName());
-        if (itemDto.getDescription() != null) existing.setDescription(itemDto.getDescription());
-        if (itemDto.getAvailable() != null) existing.setAvailable(itemDto.getAvailable());
+        if (itemDto.getName() != null) {
+            existing.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            existing.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            existing.setAvailable(itemDto.getAvailable());
+        }
         Item updated = itemRepository.update(itemId, existing);
         return ItemMapper.toItemDto(updated);
     }
@@ -46,7 +56,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto getById(Long itemId) {
         Item item = itemRepository.findById(itemId);
-        if (item == null) throw new java.util.NoSuchElementException("Item not found");
+        if (item == null) {
+            throw new java.util.NoSuchElementException("Item not found");
+        }
         return ItemMapper.toItemDto(item);
     }
 

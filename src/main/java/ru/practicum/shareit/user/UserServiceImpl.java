@@ -29,28 +29,38 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(Long id, UserDto userDto) {
-        User existing = userRepository.findById(id);
-        if (existing == null) throw new java.util.NoSuchElementException("User not found");
+        User current = userRepository.findById(id);
+        if (current == null) {
+            throw new java.util.NoSuchElementException("User not found");
+        }
+        String newName = current.getName();
+        String newEmail = current.getEmail();
         if (userDto.getName() != null) {
             if (userDto.getName().trim().isEmpty()) {
                 throw new IllegalArgumentException("Name must not be blank");
             }
-            existing.setName(userDto.getName());
+            newName = userDto.getName();
         }
         if (userDto.getEmail() != null) {
             if (userDto.getEmail().trim().isEmpty()) {
                 throw new IllegalArgumentException("Email must not be blank");
             }
-            existing.setEmail(userDto.getEmail());
+            newEmail = userDto.getEmail();
         }
-        User updated = userRepository.update(id, existing);
+        User toUpdate = new User();
+        toUpdate.setId(id);
+        toUpdate.setName(newName);
+        toUpdate.setEmail(newEmail);
+        User updated = userRepository.update(id, toUpdate);
         return UserMapper.toUserDto(updated);
     }
 
     @Override
     public UserDto getById(Long id) {
         User user = userRepository.findById(id);
-        if (user == null) throw new java.util.NoSuchElementException("User not found");
+        if (user == null) {
+            throw new java.util.NoSuchElementException("User not found");
+        }
         return UserMapper.toUserDto(user);
     }
 

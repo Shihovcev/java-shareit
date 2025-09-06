@@ -20,7 +20,9 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public Item update(Long id, Item item) {
         Item existing = items.get(id);
-        if (existing == null) throw new NoSuchElementException("Item not found");
+        if (existing == null) {
+            throw new NoSuchElementException("Item not found");
+        }
         item.setId(id);
         item.setOwner(existing.getOwner());
         items.put(id, item);
@@ -56,7 +58,9 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public void delete(Long id) {
-        if (!items.containsKey(id)) throw new NoSuchElementException("Item not found");
+        if (!items.containsKey(id)) {
+            throw new NoSuchElementException("Item not found");
+        }
         items.remove(id);
     }
 }
