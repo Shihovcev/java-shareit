@@ -71,6 +71,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(CommentNotAllowedException.class)
+    public ResponseEntity<Map<String, String>> handleCommentNotAllowedException(CommentNotAllowedException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.name());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<Map<String, String>> handleThrowableException(Throwable e) {
         Map<String, String> errorResponse = new HashMap<>();

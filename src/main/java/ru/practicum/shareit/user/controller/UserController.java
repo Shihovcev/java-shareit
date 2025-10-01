@@ -6,9 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserPatchDto;
 import ru.practicum.shareit.user.dto.UserResponseDto;
-import ru.practicum.shareit.user.model.OnCreate;
-import ru.practicum.shareit.user.model.OnUpdate;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDto saveNewUser(@RequestBody @Validated(OnCreate.class) UserDto userDto) {
+    public UserResponseDto saveNewUser(@RequestBody @Validated UserDto userDto) {
         log.info("Принял запрос на сохранение нового пользователя: {}", userDto.getName());
         return userService.create(userDto);
     }
@@ -40,10 +39,10 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserResponseDto updateUser(@RequestBody @Validated(OnUpdate.class) UserDto userDto,
+    public UserResponseDto updateUser(@RequestBody UserPatchDto userPatchDto,
                                       @PathVariable Long userId) {
         log.info("Принял запрос на обновление пользователя с Ид: {}", userId);
-        return userService.update(userDto, userId);
+        return userService.update(userPatchDto, userId);
     }
 
     @DeleteMapping("/{userId}")
