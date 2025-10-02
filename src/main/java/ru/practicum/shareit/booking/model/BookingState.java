@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.model;
 
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exceptions.ValidationException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
