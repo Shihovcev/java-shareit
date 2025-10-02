@@ -88,7 +88,7 @@ public enum BookingState {
         try {
             return BookingState.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Неизвестный статус: " + state);
+            throw new ValidationException("Unknown state: " + state);
         }
     }
 }
