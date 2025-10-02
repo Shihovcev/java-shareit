@@ -81,6 +81,7 @@ public enum BookingState {
     };
 
     public abstract Collection<Booking> getUserBookings(Long userId, BookingRepository repo, Pageable pageable);
+
     public abstract Collection<Booking> getOwnerBookings(Long userId, BookingRepository repo, Pageable pageable);
 
     public static BookingState from(String state) {
