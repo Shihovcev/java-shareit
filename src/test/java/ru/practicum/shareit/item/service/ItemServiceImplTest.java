@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -283,36 +284,40 @@ class ItemServiceImplTest {
     @Test
     void getItems_ShouldReturnUserItemsWithBookingsAndComments() {
         Long userId = 1L;
-
         User owner = new User();
         owner.setId(userId);
-
         Item item = new Item();
         item.setId(1L);
         item.setOwner(owner);
-
         Booking lastBooking = new Booking();
+        lastBooking.setId(100L);
+        lastBooking.setItem(item);
         Booking nextBooking = new Booking();
+        nextBooking.setId(101L);
+        nextBooking.setItem(item);
         Comment comment = new Comment();
-
+        comment.setId(200L);
+        comment.setItem(item);
         ItemResponseDto responseDto = new ItemResponseDto();
         responseDto.setId(1L);
+        BookingResponseDto lastBookingDto = new BookingResponseDto();
+        BookingResponseDto nextBookingDto = new BookingResponseDto();
+        CommentResponseDto commentDto = new CommentResponseDto();
 
         when(userService.getById(userId)).thenReturn(null);
         when(itemRepository.findByOwnerId(userId)).thenReturn(List.of(item));
-        when(itemMapper.toResponseDto(any(Item.class))).thenReturn(responseDto);
-        when(bookingRepository.findLastBooking(anyLong(), eq(BookingStatus.APPROVED), any(LocalDateTime.class)))
-                .thenReturn(Optional.of(lastBooking));
-        when(bookingRepository.findNextBooking(anyLong(), eq(BookingStatus.APPROVED), any(LocalDateTime.class)))
-                .thenReturn(Optional.of(nextBooking));
-        when(commentsRepository.findAllByItemId(anyLong())).thenReturn(List.of(comment));
-        when(commentMapper.fromComment(any(Comment.class))).thenReturn(new CommentResponseDto());
+        when(bookingRepository.findAllByItemIdIn(anyList())).thenReturn(List.of(lastBooking, nextBooking));
+        when(commentsRepository.findAllByItemIdIn(anyList())).thenReturn(List.of(comment));
+        when(itemMapper.toResponseDto(item)).thenReturn(responseDto);
+        when(commentMapper.fromComment(comment)).thenReturn(commentDto);
 
         Collection<ItemResponseDto> result = itemService.getItems(userId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(itemRepository).findByOwnerId(userId);
+        ItemResponseDto dto = result.iterator().next();
+        assertEquals(1L, dto.getId());
+        assertTrue(dto.getComments().contains(commentDto));
     }
 
     @Test

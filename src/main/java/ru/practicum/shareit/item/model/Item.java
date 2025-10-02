@@ -36,4 +36,14 @@ public class Item {
 
     @Column(name = "is_available", nullable = false)
     private boolean available;
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                '}';
+    }
 }
