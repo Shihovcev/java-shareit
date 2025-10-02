@@ -20,9 +20,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Optional<Item> findById(Long itemId);
 
-    @Query("SELECT i FROM Item i WHERE " +
-            "(LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) OR " +
-            "LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%'))) AND " +
-            "i.available = true")
+    @Query("""
+    SELECT i
+    FROM Item i
+    WHERE (LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%'))
+       OR LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%')))
+      AND i.available = true
+    """)
    Collection<Item> searchAvailableItems(@Param("text") String text);
 }

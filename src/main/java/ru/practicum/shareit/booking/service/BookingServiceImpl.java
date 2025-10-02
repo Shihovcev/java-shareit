@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.NotOwnerException;
@@ -111,40 +112,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<BookingResponseDto> getUserBookings(Long userId, String state, int from, int size) {
         log.info("Сервис получает бронь пользователя {}", userId);
-
         userService.getById(userId);
-
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
-        Collection<Booking> bookings;
-
-        switch (state.toUpperCase()) {
-            case "ALL":
-                bookings = bookingRepository.findByBookerIdOrderByStartDesc(userId, pageable);
-                break;
-            case "CURRENT":
-                bookings = bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                        userId, LocalDateTime.now(), LocalDateTime.now(), pageable);
-                break;
-            case "PAST":
-                bookings = bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(
-                        userId, LocalDateTime.now(), pageable);
-                break;
-            case "FUTURE":
-                bookings = bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(
-                        userId, LocalDateTime.now(), pageable);
-                break;
-            case "WAITING":
-                bookings = bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                        userId, BookingStatus.WAITING, pageable);
-                break;
-            case "REJECTED":
-                bookings = bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                        userId, BookingStatus.REJECTED, pageable);
-                break;
-            default:
-                throw new ValidationException("Неизвестный статус: " + state);
-        }
-
+        BookingState bookingState = BookingState.from(state);
+        Collection<Booking> bookings = bookingState.getUserBookings(userId, bookingRepository, pageable);
         return bookings.stream()
                 .map(bookingMapper::toResponseDto)
                 .collect(Collectors.toList());
@@ -153,40 +124,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<BookingResponseDto> getOwnerBookings(Long userId, String state, int from, int size) {
         log.info("Сервис получает забронированные вещи владельца {}", userId);
-
         userService.getById(userId);
-
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
-        Collection<Booking> bookings;
-
-        switch (state.toUpperCase()) {
-            case "ALL":
-                bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(userId, pageable);
-                break;
-            case "CURRENT":
-                bookings = bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                        userId, LocalDateTime.now(), LocalDateTime.now(), pageable);
-                break;
-            case "PAST":
-                bookings = bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(
-                        userId, LocalDateTime.now(), pageable);
-                break;
-            case "FUTURE":
-                bookings = bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(
-                        userId, LocalDateTime.now(), pageable);
-                break;
-            case "WAITING":
-                bookings = bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                        userId, BookingStatus.WAITING, pageable);
-                break;
-            case "REJECTED":
-                bookings = bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                        userId, BookingStatus.REJECTED, pageable);
-                break;
-            default:
-                throw new ValidationException("Неизвестный статус: " + state);
-        }
-
+        BookingState bookingState = BookingState.from(state);
+        Collection<Booking> bookings = bookingState.getOwnerBookings(userId, bookingRepository, pageable);
         return bookings.stream()
                 .map(bookingMapper::toResponseDto)
                 .collect(Collectors.toList());

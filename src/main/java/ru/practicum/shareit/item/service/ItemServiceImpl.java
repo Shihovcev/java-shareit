@@ -24,10 +24,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -130,22 +127,39 @@ public class ItemServiceImpl implements ItemService {
         userService.getById(userId);
         Collection<Item> items = itemRepository.findByOwnerId(userId);
         LocalDateTime now = LocalDateTime.now();
+        List<Long> itemIds = items.stream().map(Item::getId).collect(Collectors.toList());
+
+        // Получаем все бронирования и комментарии одним запросом
+        List<Booking> bookings = bookingRepository.findAllByItemIdIn(itemIds);
+        List<Comment> comments = commentsRepository.findAllByItemIdIn(itemIds);
+
+        // Группируем бронирования по itemId
+        Map<Long, List<Booking>> bookingsByItemId = bookings.stream()
+                .collect(Collectors.groupingBy(b -> b.getItem().getId()));
+        // Группируем комментарии по itemId
+        Map<Long, List<Comment>> commentsByItemId = comments.stream()
+                .collect(Collectors.groupingBy(c -> c.getItem().getId()));
 
         return items.stream()
                 .map(item -> {
                     ItemResponseDto dto = itemMapper.toResponseDto(item);
 
                     // Для владельца показываем информацию о бронированиях
-                    Optional<Booking> lastBooking = bookingRepository.findLastBooking(item.getId(),
-                            BookingStatus.APPROVED, now);
-                    Optional<Booking> nextBooking = bookingRepository.findNextBooking(item.getId(),
-                            BookingStatus.APPROVED, now);
-
+                    List<Booking> itemBookings = bookingsByItemId.getOrDefault(item.getId(), Collections.emptyList());
+                    Optional<Booking> lastBooking = itemBookings.stream()
+                            .filter(b -> b.getStatus() == BookingStatus.APPROVED && b.getStart().isBefore(now))
+                            .max(Comparator.comparing(Booking::getStart));
+                    Optional<Booking> nextBooking = itemBookings.stream()
+                            .filter(b -> b.getStatus() == BookingStatus.APPROVED && b.getStart().isAfter(now))
+                            .min(Comparator.comparing(Booking::getStart));
                     lastBooking.ifPresent(booking -> dto.setLastBooking(bookingMapper.toResponseDto(booking)));
                     nextBooking.ifPresent(booking -> dto.setNextBooking(bookingMapper.toResponseDto(booking)));
 
-                    Collection<CommentResponseDto> comments = findAllByItemId(item.getId());
-                    dto.setComments(new ArrayList<>(comments));
+                    List<Comment> itemComments = commentsByItemId.getOrDefault(item.getId(), Collections.emptyList());
+                    List<CommentResponseDto> commentDtos = itemComments.stream()
+                            .map(commentMapper::fromComment)
+                            .collect(Collectors.toList());
+                    dto.setComments(commentDtos);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -163,7 +177,9 @@ public class ItemServiceImpl implements ItemService {
         Optional<Item> item = itemRepository.findById(itemId);
         if (item.isPresent()) {
             return item.get();
-        } else throw new NotFoundException("Вещь не найдена");
+        } else {
+            throw new NotFoundException("Вещь не найдена");
+        }
     }
 
     @Override

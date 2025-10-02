@@ -11,5 +11,7 @@ public interface CommentsRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findAllByItemId(Long itemId);
 
+    List<Comment> findAllByItemIdIn(List<Long> itemIds);
+
     Comment save(Comment comment);
 }

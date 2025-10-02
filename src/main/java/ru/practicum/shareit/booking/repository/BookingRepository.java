@@ -59,24 +59,41 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("statuses") Collection<BookingStatus> statuses);
 
 
-    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
-            "WHERE b.booker.id = :userId " +
-            "AND b.item.id = :itemId " +
-            "AND b.status = :status " +
-            "AND b.end < :now")
+    @Query("""
+        SELECT COUNT(b) > 0
+        FROM Booking b
+        WHERE b.booker.id = :userId
+          AND b.item.id = :itemId
+          AND b.status = :status
+          AND b.end < :now
+        """)
     boolean existsCompletedBookingByUserAndItem(
             @Param("userId") Long userId,
             @Param("itemId") Long itemId,
             @Param("status") BookingStatus status,
             @Param("now") LocalDateTime now);
 
-    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status = :status AND b.start <= :now " +
-            "ORDER BY b.start DESC")
+    @Query("""
+        SELECT b
+        FROM Booking b
+        WHERE b.item.id = :itemId
+          AND b.status = :status
+          AND b.start <= :now
+        ORDER BY b.start DESC
+        """)
     Optional<Booking> findLastBooking(@Param("itemId") Long itemId, @Param("status") BookingStatus status,
                                       @Param("now") LocalDateTime now);
 
-    @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status = :status AND b.start > :now " +
-            "ORDER BY b.start ASC")
+    @Query("""
+    SELECT b
+    FROM Booking b
+    WHERE b.item.id = :itemId
+      AND b.status = :status
+      AND b.start > :now
+    ORDER BY b.start ASC
+    """)
     Optional<Booking> findNextBooking(@Param("itemId") Long itemId, @Param("status") BookingStatus status,
                                       @Param("now") LocalDateTime now);
+
+    List<Booking> findAllByItemIdIn(List<Long> itemIds);
 }

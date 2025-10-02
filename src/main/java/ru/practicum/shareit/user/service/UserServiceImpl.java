@@ -80,6 +80,8 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = repository.findById(userId);
         if (user.isPresent()) {
             return user.get();
-        } else throw new NotFoundException("Пользоваатель не найден");
+        } else {
+            throw new NotFoundException("Пользоваатель не найден");
+        }
     }
 }
